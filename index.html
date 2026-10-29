@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#08080c] text-white">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Graphic Poster Space</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:ital,wght@0,700;0,900;1,900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .font-cursive { font-family: 'Great Vibes', cursive; }
+    .font-sans-jp { font-family: 'Noto Sans JP', sans-serif; }
+    .font-montserrat { font-family: 'Montserrat', sans-serif; }
+
+    :root {
+      --accent-color: #ff2a4b;
+      --accent-glow: rgba(255, 42, 75, 0.85);
+      --accent-glow-subtle: rgba(255, 42, 75, 0.25);
+    }
+
+    /* Pattern grid background */
+    .bg-grid-dots {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .bg-stripes {
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--accent-color),
+        var(--accent-color) 6px,
+        transparent 6px,
+        transparent 12px
+      );
+    }
+
+    .writing-vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+    }
+
+    /* Poster transition container */
+    #posterCard {
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* Glow transitions */
+    .accent-glow-box {
+      box-shadow: 0 0 25px var(--accent-glow), inset 0 0 15px var(--accent-glow-subtle);
+    }
+
+    .accent-text-glow {
+      text-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--accent-glow-subtle);
+      transition: text-shadow 0.3s ease, color 0.3s ease;
+    }
+
+    /* ONLY CHARACTER IMAGE TURNS GRAYSCALE ON HOVER */
+    .character-box:hover img {
+      filter: grayscale(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.4)) 
+              brightness(1.1) contrast(1.05) !important;
+    }
+  </style>
+</head>
+<body class="h-full flex items-center justify-center bg-[#050508] text-white p-2 sm:p-6 overflow-hidden selection:bg-purple-600 selection:text-white">
+
+  <!-- MAIN GRAPHIC CANVAS AREA (ONLY ELEMENT VISIBLE) -->
+  <main class="w-full flex items-center justify-center">
+    
+    <!-- POSTER SPACE CONTAINER -->
+    <div id="posterCard" class="relative w-full max-w-[480px] aspect-[4/5] bg-[#0b0b12] border border-white/20 rounded-2xl p-5 sm:p-7 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 select-none">
+      
+      <!-- BACKGROUND OVERLAYS -->
+      <div class="absolute inset-0 bg-grid-dots opacity-40 pointer-events-none"></div>
+
+      <!-- Aura Circle in Background -->
+      <div id="auraCircle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72%] h-[72%] rounded-full border-2 border-[var(--accent-color)] accent-glow-box opacity-80 pointer-events-none transition-all duration-300"></div>
+
+      <!-- Particle Canvas Overlay -->
+      <canvas id="particleCanvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+
+      <!-- TOP HEADER SECTION -->
+      <div class="relative z-20 flex justify-between items-start">
+        
+        <!-- TOP LEFT: Slash lines & COLOR SELECTOR INSIDE THE SPACE CARD -->
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-black italic tracking-tighter text-[var(--accent-color)] transition-colors duration-300">// /</span>
+            <div class="w-16 sm:w-24 h-[3px] bg-[var(--accent-color)] transition-colors duration-300"></div>
+          </div>
+
+          <!-- Color Control Chips Inside Poster -->
+          <div class="flex items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-1.5 border border-white/15 rounded-full shadow-lg w-fit">
+            <span class="text-[9px] font-montserrat font-bold uppercase tracking-wider text-gray-400 mr-0.5">Color</span>
+            <button id="btnRojo" title="Rojo Neon" class="w-4 h-4 rounded-full bg-[#ff2a4b] hover:scale-125 transition-all ring-2 ring-red-400 ring-offset-1 ring-offset-black"></button>
+            <button id="btnAzul" title="Azul Ciel" class="w-4 h-4 rounded-full bg-[#00a8ff] hover:scale-125 transition-all opacity-60 hover:opacity-100"></button>
+            <button id="btnBlanco" title="Blanco Pure" class="w-4 h-4 rounded-full bg-slate-100 hover:scale-125 transition-all opacity-60 hover:opacity-100"></button>
+          </div>
+        </div>
+
+        <!-- TOP RIGHT: Vertical Japanese Kanji & Subtitle -->
+        <div class="flex flex-col items-end gap-1">
+          <div class="flex items-start gap-2">
+            <span id="kanjiText" class="writing-vertical font-sans-jp font-black text-xl sm:text-2xl tracking-[0.25em] text-white/95 drop-shadow-md">
+              五条 悟
+            </span>
+            <div class="w-1 h-12 bg-white/30 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WATERMARK BACKDROP IMAGE OVERLAY -->
+      <div class="absolute top-6 right-6 w-44 sm:w-52 aspect-square opacity-15 grayscale pointer-events-none z-0 overflow-hidden rounded-lg">
+        <img id="bgWatermarkImg" src="https://i.ibb.co/CpYbKR5t/zz.png" alt="Backdrop" class="w-full h-full object-cover">
+      </div>
+
+      <!-- CENTER CHARACTER CONTAINER (Hover Trigger For Glitch + Purple Space) -->
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <div id="characterContainer" class="character-box pointer-events-auto cursor-pointer h-[115%] sm:h-[125%] w-auto max-w-[105%] flex items-center justify-center transition-transform duration-300 hover:scale-[1.04] -translate-y-2">
+          
+          <!-- Primary Render: Character Image with Automatic Fallback -->
+          <img id="characterImg" 
+               src="https://i.ibb.co/CpYbKR5t/zz.png" 
+               alt="Character" 
+               class="h-full w-full object-contain filter drop-shadow-[0_0_25px_var(--accent-glow)] transition-all duration-300 scale-110"
+               onerror="showCharacterFallback()" />
+
+          <!-- Fallback Graphic Vector SVG if image fails -->
+          <div id="characterFallback" class="hidden h-full w-full flex items-center justify-center">
+            <svg class="fallback-svg h-full w-full max-h-[420px] object-contain filter drop-shadow-[0_0_20px_var(--accent-glow)]" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M90 120 L110 70 L130 90 L150 50 L170 90 L190 65 L210 120 L230 140 L200 150 L180 130 L150 140 L120 130 L100 150 Z" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2"/>
+              <path d="M115 130 C115 130, 150 190, 185 130 L180 120 L120 120 Z" fill="#FFD1B3"/>
+              <path d="M105 130 L195 130 L190 155 L110 155 Z" fill="#0F172A"/>
+              <path d="M135 170 Q150 182 165 170" stroke="#991B1B" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M100 180 L120 160 L150 170 L180 160 L200 180 L220 220 L240 380 L60 380 L80 220 Z" fill="#0F172A"/>
+              <path d="M150 170 L150 380" stroke="#1E293B" stroke-width="3"/>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MAIN OVERLAY TYPOGRAPHY -->
+      <div class="relative z-20 mt-3 sm:mt-6">
+        <h1 id="cursiveTitle" class="font-cursive text-6xl sm:text-8xl text-[var(--accent-color)] accent-text-glow leading-none transform -rotate-6 tracking-wide select-none transition-colors duration-300">
+          Gojo
+        </h1>
+        <h2 id="boldSubTitle" class="font-montserrat font-black text-2xl sm:text-3xl tracking-[0.35em] text-white/95 uppercase pl-2 -mt-2 sm:-mt-4 select-none">
+          SATORU
+        </h2>
+      </div>
+
+      <!-- HUD ACCENTS (Dot patterns & Striped Bar) -->
+      <div class="absolute top-[45%] left-[8%] z-10 hidden sm:flex flex-col gap-1.5 opacity-80 pointer-events-none">
+        <div class="grid grid-cols-3 gap-1">
+          <div class="w-1.5 h-1.5 bg-white/70 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-white/70 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-white/70 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-white/70 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-[var(--accent-color)] rounded-full transition-colors duration-300"></div>
+          <div class="w-1.5 h-1.5 bg-white/70 rounded-full"></div>
+        </div>
+        <!-- Binary HUD Accent -->
+        <div class="font-mono text-[9px] text-white/50 tracking-widest leading-none mt-1">
+          01001<br>10100
+        </div>
+      </div>
+
+      <div class="absolute top-[40%] right-[8%] z-10 flex flex-col items-end gap-1 pointer-events-none">
+        <!-- Binary Matrix Accent -->
+        <div class="font-mono text-[10px] text-[var(--accent-color)] opacity-70 tracking-tighter leading-tight text-right font-black transition-colors duration-300">
+          0101<br>1010
+        </div>
+        <div class="w-8 h-12 bg-stripes opacity-90 transition-all duration-300"></div>
+        <div class="flex gap-1 text-[10px] font-mono font-black text-[var(--accent-color)] transition-colors duration-300">
+          <span>0</span><span>1</span><span>0</span>
+        </div>
+      </div>
+
+      <!-- BOTTOM SECTION: FULL AUDIO PLAYER (REPLACED BOTTOM TEXTS) -->
+      <div class="relative z-30 mt-auto bg-black/85 backdrop-blur-md border border-white/20 rounded-xl p-3 shadow-2xl w-full">
+        <!-- Audio Track Metadata & Equalizer -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <i data-lucide="music" class="w-4 h-4 text-[var(--accent-color)] shrink-0 transition-colors duration-300"></i>
+            <div class="truncate">
+              <p id="trackTitle" class="text-xs font-montserrat font-bold text-white truncate">Kaikai Kitan</p>
+              <p id="trackArtist" class="text-[9px] font-mono text-gray-400 truncate">Eve - JJK OP 1</p>
+            </div>
+          </div>
+
+          <!-- Animated Equalizer Spectrum -->
+          <div id="equalizer" class="flex items-end gap-[2px] h-4 shrink-0 px-1">
+            <div class="eq-bar w-[2px] h-1 bg-[var(--accent-color)] rounded-full transition-colors duration-300"></div>
+            <div class="eq-bar w-[2px] h-1 bg-[var(--accent-color)] rounded-full transition-colors duration-300"></div>
+            <div class="eq-bar w-[2px] h-1 bg-[var(--accent-color)] rounded-full transition-colors duration-300"></div>
+            <div class="eq-bar w-[2px] h-1 bg-[var(--accent-color)] rounded-full transition-colors duration-300"></div>
+            <div class="eq-bar w-[2px] h-1 bg-[var(--accent-color)] rounded-full transition-colors duration-300"></div>
+          </div>
+        </div>
+
+        <!-- Progress Bar & Timer -->
+        <div class="flex items-center gap-2 mb-2.5">
+          <span id="currentTime" class="text-[9px] font-mono text-gray-400">0:00</span>
+          <div id="progressContainer" class="flex-1 h-1.5 bg-white/20 rounded-full cursor-pointer relative overflow-hidden">
+            <div id="progressBar" class="h-full w-0 bg-[var(--accent-color)] transition-colors duration-300"></div>
+          </div>
+          <span id="durationTime" class="text-[9px] font-mono text-gray-400">0:00</span>
+        </div>
+
+        <!-- Player Controls: Play/Pause, Prev/Next, Volume Controls -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <!-- Previous Track -->
+            <button id="btnPrev" title="Anterior" class="text-gray-300 hover:text-white transition-colors p-1">
+              <i data-lucide="skip-back" class="w-4 h-4"></i>
+            </button>
+            
+            <!-- Play / Pause Button -->
+            <button id="btnPlayPause" title="Reproducir / Pausa" class="bg-[var(--accent-color)] text-black p-1.5 rounded-full hover:scale-105 transition-all shadow-md">
+              <i id="playIcon" data-lucide="play" class="w-4 h-4 fill-black"></i>
+            </button>
+            
+            <!-- Next Track -->
+            <button id="btnNext" title="Siguiente" class="text-gray-300 hover:text-white transition-colors p-1">
+              <i data-lucide="skip-forward" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Volume Controls Slider & Badge -->
+          <div class="flex items-center gap-1.5">
+            <button id="btnMute" title="Silenciar" class="text-gray-400 hover:text-white transition-colors p-1">
+              <i id="volumeIcon" data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+            </button>
+            <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" class="w-14 sm:w-16 h-1 bg-white/20 accent-[var(--accent-color)] rounded-lg cursor-pointer">
+            <span id="playlistBadge" class="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-white/10 rounded text-gray-300 ml-1">1/3</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <audio id="audioElement" preload="metadata"></audio>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    lucide.createIcons();
+
+    // DOM ELEMENTS
+    const posterCard = document.getElementById('posterCard');
+    const characterContainer = document.getElementById('characterContainer');
+    const btnRojo = document.getElementById('btnRojo');
+    const btnAzul = document.getElementById('btnAzul');
+    const btnBlanco = document.getElementById('btnBlanco');
+
+    // PLAYLIST DATA WITH LOCAL ASSETS (assets/0.mp3, assets/1.mp3, assets/2.mp3)
+    const playlist = [
+      {
+        title: "Kaikai Kitan",
+        artist: "Eve - JJK Opening 1",
+        src: "assets/0.mp3"
+      },
+      {
+        title: "SPECIALZ",
+        artist: "King Gnu - Shibuya Arc",
+        src: "assets/1.mp3"
+      },
+      {
+        title: "Vivid Vice",
+        artist: "Who-ya Extended - JJK Opening 2",
+        src: "assets/2.mp3"
+      }
+    ];
+
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+
+    // AUDIO ELEMENTS
+    const audio = document.getElementById('audioElement');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnMute = document.getElementById('btnMute');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeIcon = document.getElementById('volumeIcon');
+    const trackTitle = document.getElementById('trackTitle');
+    const trackArtist = document.getElementById('trackArtist');
+    const playlistBadge = document.getElementById('playlistBadge');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationTimeEl = document.getElementById('durationTime');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const eqBars = document.querySelectorAll('.eq-bar');
+
+    // LOAD TRACK
+    function loadTrack(index) {
+      currentTrackIndex = index;
+      const track = playlist[currentTrackIndex];
+      audio.src = track.src;
+      trackTitle.textContent = track.title;
+      trackArtist.textContent = track.artist;
+      playlistBadge.textContent = `${currentTrackIndex + 1}/${playlist.length}`;
+    }
+
+    // PLAY/PAUSE
+    function togglePlay() {
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        audio.play().catch(() => {});
+      }
+    }
+
+    audio.addEventListener('play', () => {
+      isPlaying = true;
+      btnPlayPause.innerHTML = `<i data-lucide="pause" class="w-4 h-4 fill-black"></i>`;
+      lucide.createIcons();
+      startEqualizer();
+    });
+
+    audio.addEventListener('pause', () => {
+      isPlaying = false;
+      btnPlayPause.innerHTML = `<i data-lucide="play" class="w-4 h-4 fill-black"></i>`;
+      lucide.createIcons();
+      stopEqualizer();
+    });
+
+    // NEXT / PREV
+    btnPrev.addEventListener('click', () => {
+      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) audio.play();
+    });
+
+    btnNext.addEventListener('click', () => {
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      loadTrack(currentTrackIndex);
+      if (isPlaying) audio.play();
+    });
+
+    btnPlayPause.addEventListener('click', togglePlay);
+
+    // VOLUME SLIDER CONTROLS
+    let lastVolume = 1;
+
+    volumeSlider.addEventListener('input', (e) => {
+      audio.volume = parseFloat(e.target.value);
+      audio.muted = (audio.volume === 0);
+      if (audio.volume > 0) lastVolume = audio.volume;
+      updateVolumeIcon();
+    });
+
+    btnMute.addEventListener('click', () => {
+      audio.muted = !audio.muted;
+      if (audio.muted) {
+        volumeSlider.value = 0;
+      } else {
+        audio.volume = lastVolume || 0.5;
+        volumeSlider.value = audio.volume;
+      }
+      updateVolumeIcon();
+    });
+
+    function updateVolumeIcon() {
+      if (audio.muted || audio.volume === 0) {
+        volumeIcon.setAttribute('data-lucide', 'volume-x');
+      } else if (audio.volume < 0.5) {
+        volumeIcon.setAttribute('data-lucide', 'volume-1');
+      } else {
+        volumeIcon.setAttribute('data-lucide', 'volume-2');
+      }
+      lucide.createIcons();
+    }
+
+    // PROGRESS UPDATE
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        durationTimeEl.textContent = formatTime(audio.duration);
+      }
+    });
+
+    progressContainer.addEventListener('click', (e) => {
+      const width = progressContainer.clientWidth;
+      const clickX = e.offsetX;
+      if (audio.duration) {
+        audio.currentTime = (clickX / width) * audio.duration;
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      btnNext.click();
+    });
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // EQUALIZER ANIMATION
+    let eqInterval;
+    function startEqualizer() {
+      clearInterval(eqInterval);
+      eqInterval = setInterval(() => {
+        eqBars.forEach(bar => {
+          const h = Math.floor(Math.random() * 12) + 3;
+          bar.style.height = `${h}px`;
+        });
+      }, 120);
+    }
+
+    function stopEqualizer() {
+      clearInterval(eqInterval);
+      eqBars.forEach(bar => bar.style.height = '4px');
+    }
+
+    loadTrack(0);
+
+    // HOVER OVER CHARACTER: GRAYSCALE EFFECT
+    // (Removed purple-void background card color change so only the image is affected)
+
+    // COLOR SELECTOR LOGIC
+    function setSpaceColor(colorHex, activeBtn) {
+      document.documentElement.style.setProperty('--accent-color', colorHex);
+      
+      const r = parseInt(colorHex.slice(1, 3), 16);
+      const g = parseInt(colorHex.slice(3, 5), 16);
+      const b = parseInt(colorHex.slice(5, 7), 16);
+      
+      document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.85)`);
+      document.documentElement.style.setProperty('--accent-glow-subtle', `rgba(${r}, ${g}, ${b}, 0.25)`);
+
+      [btnRojo, btnAzul, btnBlanco].forEach(btn => {
+        btn.className = 'w-4 h-4 rounded-full hover:scale-125 transition-all opacity-60 hover:opacity-100';
+        if (btn === btnRojo) btn.classList.add('bg-[#ff2a4b]');
+        if (btn === btnAzul) btn.classList.add('bg-[#00a8ff]');
+        if (btn === btnBlanco) btn.classList.add('bg-slate-100');
+      });
+
+      activeBtn.className = 'w-4 h-4 rounded-full hover:scale-125 transition-all opacity-100 ring-2 ring-white ring-offset-1 ring-offset-black';
+      if (activeBtn === btnRojo) activeBtn.classList.add('bg-[#ff2a4b]', 'ring-red-400');
+      if (activeBtn === btnAzul) activeBtn.classList.add('bg-[#00a8ff]', 'ring-blue-400');
+      if (activeBtn === btnBlanco) activeBtn.classList.add('bg-slate-100', 'ring-white');
+    }
+
+    btnRojo.addEventListener('click', () => setSpaceColor('#ff2a4b', btnRojo));
+    btnAzul.addEventListener('click', () => setSpaceColor('#00a8ff', btnAzul));
+    btnBlanco.addEventListener('click', () => setSpaceColor('#f8fafc', btnBlanco));
+
+    // PARTICLE CANVAS
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = posterCard.clientWidth;
+      canvas.height = posterCard.clientHeight;
+    }
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedY = -Math.random() * 1.2 - 0.2;
+        this.opacity = Math.random() * 0.7 + 0.2;
+      }
+      update() {
+        this.y += this.speedY;
+        if (this.y < 0) {
+          this.reset();
+          this.y = canvas.height;
+        }
+      }
+      draw() {
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+        ctx.fillStyle = color || '#ff2a4b';
+        ctx.globalAlpha = this.opacity;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function initParticles() {
+      resizeCanvas();
+      particles = [];
+      for (let i = 0; i < 35; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    window.onload = () => {
+      initParticles();
+      animateParticles();
+    };
+  </script>
+</body>
+</html>
