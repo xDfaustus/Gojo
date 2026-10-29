@@ -42,9 +42,46 @@
       text-orientation: upright;
     }
 
-    /* Poster transition container */
+    /* Moving light trail beam wrapper around poster card */
+    .neon-trail-wrapper {
+      position: relative;
+      border-radius: 1rem;
+      padding: 2px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Rotating conic gradient light beam */
+    .neon-trail-wrapper::before {
+      content: '';
+      position: absolute;
+      width: 180%;
+      height: 180%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 70%,
+        var(--accent-color) 88%,
+        #ffffff 96%,
+        var(--accent-color) 100%
+      );
+      animation: rotateBeam 4s linear infinite;
+    }
+
+    @keyframes rotateBeam {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Poster card container inner glow */
     #posterCard {
-      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+      position: relative;
+      z-index: 10;
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 25px var(--accent-glow-subtle);
+      transition: box-shadow 0.4s ease;
     }
 
     /* Glow transitions */
@@ -62,21 +99,26 @@
       filter: grayscale(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.4)) 
               brightness(1.1) contrast(1.05) !important;
     }
+
+    /* Equalizer bar animation */
+    .eq-bar {
+      transition: height 0.15s ease-in-out;
+    }
   </style>
 </head>
 <body class="h-full flex items-center justify-center bg-[#050508] text-white p-2 sm:p-6 overflow-hidden selection:bg-purple-600 selection:text-white">
 
-  <!-- MAIN GRAPHIC CANVAS AREA (ONLY ELEMENT VISIBLE) -->
+  <!-- MAIN GRAPHIC CANVAS AREA -->
   <main class="w-full flex items-center justify-center">
     
-    <!-- POSTER SPACE CONTAINER -->
-    <div id="posterCard" class="relative w-full max-w-[480px] aspect-[4/5] bg-[#0b0b12] border border-white/20 rounded-2xl p-5 sm:p-7 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 select-none">
-      
-      <!-- BACKGROUND OVERLAYS -->
-      <div class="absolute inset-0 bg-grid-dots opacity-40 pointer-events-none"></div>
+    <!-- LIGHT TRAIL WRAPPER -->
+    <div class="neon-trail-wrapper w-full max-w-[480px] shadow-2xl">
 
-      <!-- Aura Circle in Background -->
-      <div id="auraCircle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72%] h-[72%] rounded-full border-2 border-[var(--accent-color)] accent-glow-box opacity-80 pointer-events-none transition-all duration-300"></div>
+      <!-- POSTER SPACE CONTAINER -->
+      <div id="posterCard" class="relative w-full aspect-[4/5] bg-[#0b0b12] border rounded-2xl p-5 sm:p-7 flex flex-col justify-between overflow-hidden transition-all duration-300 select-none">
+        
+        <!-- BACKGROUND OVERLAYS -->
+        <div class="absolute inset-0 bg-grid-dots opacity-40 pointer-events-none"></div>
 
       <!-- Particle Canvas Overlay -->
       <canvas id="particleCanvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
@@ -116,34 +158,20 @@
         <img id="bgWatermarkImg" src="https://i.ibb.co/CpYbKR5t/zz.png" alt="Backdrop" class="w-full h-full object-cover">
       </div>
 
-      <!-- CENTER CHARACTER CONTAINER (Hover Trigger For Glitch + Purple Space) -->
+      <!-- CENTER CHARACTER CONTAINER (Grayscale on Hover) -->
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
         <div id="characterContainer" class="character-box pointer-events-auto cursor-pointer h-[115%] sm:h-[125%] w-auto max-w-[105%] flex items-center justify-center transition-transform duration-300 hover:scale-[1.04] -translate-y-2">
           
-          <!-- Primary Render: Character Image with Automatic Fallback -->
           <img id="characterImg" 
                src="https://i.ibb.co/CpYbKR5t/zz.png" 
                alt="Character" 
-               class="h-full w-full object-contain filter drop-shadow-[0_0_25px_var(--accent-glow)] transition-all duration-300 scale-110"
-               onerror="showCharacterFallback()" />
-
-          <!-- Fallback Graphic Vector SVG if image fails -->
-          <div id="characterFallback" class="hidden h-full w-full flex items-center justify-center">
-            <svg class="fallback-svg h-full w-full max-h-[420px] object-contain filter drop-shadow-[0_0_20px_var(--accent-glow)]" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M90 120 L110 70 L130 90 L150 50 L170 90 L190 65 L210 120 L230 140 L200 150 L180 130 L150 140 L120 130 L100 150 Z" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2"/>
-              <path d="M115 130 C115 130, 150 190, 185 130 L180 120 L120 120 Z" fill="#FFD1B3"/>
-              <path d="M105 130 L195 130 L190 155 L110 155 Z" fill="#0F172A"/>
-              <path d="M135 170 Q150 182 165 170" stroke="#991B1B" stroke-width="3" fill="none" stroke-linecap="round"/>
-              <path d="M100 180 L120 160 L150 170 L180 160 L200 180 L220 220 L240 380 L60 380 L80 220 Z" fill="#0F172A"/>
-              <path d="M150 170 L150 380" stroke="#1E293B" stroke-width="3"/>
-            </svg>
-          </div>
+               class="h-full w-full object-contain filter drop-shadow-[0_0_25px_var(--accent-glow)] transition-all duration-300 scale-110" />
 
         </div>
       </div>
 
       <!-- MAIN OVERLAY TYPOGRAPHY -->
-      <div class="relative z-20 mt-3 sm:mt-6">
+      <div class="relative z-20 mt-3 sm:mt-6 pointer-events-none">
         <h1 id="cursiveTitle" class="font-cursive text-6xl sm:text-8xl text-[var(--accent-color)] accent-text-glow leading-none transform -rotate-6 tracking-wide select-none transition-colors duration-300">
           Gojo
         </h1>
@@ -152,7 +180,7 @@
         </h2>
       </div>
 
-      <!-- HUD ACCENTS (Dot patterns & Striped Bar) -->
+      <!-- HUD ACCENTS (Dot patterns, Binary & Striped Bar) -->
       <div class="absolute top-[45%] left-[8%] z-10 hidden sm:flex flex-col gap-1.5 opacity-80 pointer-events-none">
         <div class="grid grid-cols-3 gap-1">
           <div class="w-1.5 h-1.5 bg-white/70 rounded-full"></div>
@@ -179,7 +207,7 @@
         </div>
       </div>
 
-      <!-- BOTTOM SECTION: FULL AUDIO PLAYER (REPLACED BOTTOM TEXTS) -->
+      <!-- BOTTOM SECTION: FULL AUDIO PLAYER -->
       <div class="relative z-30 mt-auto bg-black/85 backdrop-blur-md border border-white/20 rounded-xl p-3 shadow-2xl w-full">
         <!-- Audio Track Metadata & Equalizer -->
         <div class="flex items-center justify-between mb-2">
@@ -210,7 +238,7 @@
           <span id="durationTime" class="text-[9px] font-mono text-gray-400">0:00</span>
         </div>
 
-        <!-- Player Controls: Play/Pause, Prev/Next, Volume Controls -->
+        <!-- Player Controls: Play/Pause, Prev/Next, Volume Slider -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <!-- Previous Track -->
@@ -240,6 +268,8 @@
         </div>
       </div>
 
+      </div>
+
     </div>
 
   </main>
@@ -252,7 +282,6 @@
 
     // DOM ELEMENTS
     const posterCard = document.getElementById('posterCard');
-    const characterContainer = document.getElementById('characterContainer');
     const btnRojo = document.getElementById('btnRojo');
     const btnAzul = document.getElementById('btnAzul');
     const btnBlanco = document.getElementById('btnBlanco');
@@ -422,9 +451,6 @@
     }
 
     loadTrack(0);
-
-    // HOVER OVER CHARACTER: GRAYSCALE EFFECT
-    // (Removed purple-void background card color change so only the image is affected)
 
     // COLOR SELECTOR LOGIC
     function setSpaceColor(colorHex, activeBtn) {
